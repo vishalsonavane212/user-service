@@ -8,6 +8,8 @@ import com.maveric.userservice.utils.Utills;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -46,49 +48,76 @@ public class UserService implements IUserService{
     @Override
     public UserDTO getUserDetailsById(Integer userId) {
         UserDTO userDTO = new UserDTO();
-        Optional<UserEntity> userEntity =  iUserRepository.findById(userId);
-       if(userEntity.isPresent()){
-            BeanUtils.copyProperties(userEntity.get(),userDTO);
+        try {
+            Optional<UserEntity> userEntity = iUserRepository.findById(userId);
+            if (userEntity.isPresent()) {
+                BeanUtils.copyProperties(userEntity.get(), userDTO);
+            }
+        }catch (Exception e){
+
         }
         return userDTO;
     }
 
     @Override
     public UserDTO updateUser(UserDTO userDTO) {
-      UserEntity resultById=null;
-        Optional<UserEntity> userEntity = iUserRepository.findById(userDTO.getId());
-        if (userEntity.isPresent()) {
-            resultById=userEntity.get();
-           // userDTO.setCreatedAt(Utills.convertSqlToUtilDate(resultById.getCreatedAt()));
-            resultById = mapUserDtoToUserEntity(userDTO,resultById);
-            resultById.setId(userDTO.getId());
-            UserEntity result = iUserRepository.save(resultById);
+        try {
+            UserEntity resultById = null;
+            Optional<UserEntity> userEntity = iUserRepository.findById(userDTO.getId());
+            if (userEntity.isPresent()) {
+                resultById = userEntity.get();
+                // userDTO.setCreatedAt(Utills.convertSqlToUtilDate(resultById.getCreatedAt()));
+                resultById = mapUserDtoToUserEntity(userDTO, resultById);
+                resultById.setId(userDTO.getId());
+                UserEntity result = iUserRepository.save(resultById);
 
-            return mapUserEntityToUserDTO(result);
+                return mapUserEntityToUserDTO(result);
+            }
+        }catch (Exception e){
+
         }
-
         return  null;
     }
 
     @Override
     public UserDTO deleteUser(Integer userId) {
-       Optional<UserEntity> userEntity = iUserRepository.findById(userId);
-       if(userEntity.isPresent()){
-           iUserRepository.deleteById(userId);
-           userEntity.get();
-            return mapUserEntityToUserDTO(userEntity.get());
-       }
+        try {
+            Optional<UserEntity> userEntity = iUserRepository.findById(userId);
+            if (userEntity.isPresent()) {
+                iUserRepository.deleteById(userId);
+                userEntity.get();
+                return mapUserEntityToUserDTO(userEntity.get());
+            }
+        }catch (Exception e){
+
+        }
         return null;
     }
 
     @Override
     public List<UserDTO> getUserByEmail(String email) {
-       Optional<List<UserEntity>> userEntity = iUserRepository.findByemail(email);
-       if(userEntity.isPresent()){
-         List<UserDTO> users =  userEntity.get().stream().map(entity -> mapUserEntityToUserDTO(entity)).collect(Collectors.toList());
-       return users;
-       }
+        try {
+            Optional<List<UserEntity>> userEntity = iUserRepository.findByemail(email);
+            if (userEntity.isPresent()) {
+                List<UserDTO> users = userEntity.get().stream().map(entity -> mapUserEntityToUserDTO(entity)).collect(Collectors.toList());
+                return users;
+            }
+        }catch (Exception e){
+
+        }
         return null;
+    }
+
+    @Override
+    public Page<UserEntity> getUsers(Pageable pageable) {
+        Page<UserEntity> results= null;
+        try {
+             results =  iUserRepository.findAll(pageable);
+        }catch (Exception e){
+
+        }
+
+        return results;
     }
 
     private UserEntity mapUserDtoToUserEntity(UserDTO userDTO,UserEntity userEntity){

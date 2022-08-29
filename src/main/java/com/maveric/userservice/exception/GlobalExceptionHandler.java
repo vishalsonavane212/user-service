@@ -1,5 +1,6 @@
-package com.maveric.userservice.Exception;
+package com.maveric.userservice.exception;
 
+import com.maveric.userservice.utils.UserServiceConstant;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,11 +10,11 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import java.time.LocalDate;
+import javax.validation.ConstraintViolationException;
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,7 +24,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ErrorDetails handleExceptions(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.BAD_REQUEST,ex.getMessage(), "Exception");
+        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage(), "Exception");
         return errorDetails;
     }
 
@@ -36,5 +37,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             errors.put(fieldName, errorMessage);
         });
         return new ResponseEntity<>(errors,status );
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseBody
+    public ErrorDetails handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.BAD_REQUEST,ex.getMessage(), ex.getConstraintViolations().toString());
+        return errorDetails;
+    }
+
+    @ExceptionHandler({ AccessDeniedException.class })
+    public ResponseEntity<Object> handleAccessDeniedException(
+            Exception ex, WebRequest request) {
+        return new ResponseEntity<Object>(
+                UserServiceConstant.access_denied_message_here, new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 }

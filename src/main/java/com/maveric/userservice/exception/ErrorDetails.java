@@ -1,4 +1,4 @@
-package com.maveric.userservice.Exception;
+package com.maveric.userservice.exception;
 
 import org.springframework.http.HttpStatus;
 

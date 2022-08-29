@@ -1,5 +1,6 @@
 package com.maveric.userservice.dto;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.*;
@@ -27,10 +28,12 @@ public class UserDTO implements Serializable {
     @NotBlank
     @Email
     private  String email;
+
     private  String phoneNumber;
     private  String address;
 
     @PastOrPresent
+    @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date dateOfBirth;
     private  Date createdAt;
     private  Date updatedAt;
