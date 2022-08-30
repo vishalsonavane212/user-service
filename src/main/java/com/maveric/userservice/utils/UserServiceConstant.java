@@ -8,4 +8,12 @@ public class UserServiceConstant {
     public  static  final  String user_successfully_deleted="User successfully deleted";
 
     public  static  final  String access_denied_message_here ="Access denied message here";
+
+    public  static  final  String email_is_already_present="email is already present";
+
+    public  static  final  String email_not_present="email not present";
+
+    public  static  final  String last_name_must_not_empty="last name must not be empty";
+
+    public  static  final  String first_name_must_not_empty="first name must not be empty";
 }

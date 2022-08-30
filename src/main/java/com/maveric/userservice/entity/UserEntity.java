@@ -1,10 +1,12 @@
 package com.maveric.userservice.entity;
 
+import com.maveric.userservice.utils.Gender;
+
 import javax.persistence.*;
 import java.sql.Date;
 
 @Entity
-@Table(name = "tb_use_details")
+@Table(name = "user_details")
 public class UserEntity {
  @Id
  @Column(name="user_id")
@@ -22,6 +24,9 @@ public class UserEntity {
  private  Date updatedAt;
  private  String password;
  private  String role;
+
+ private Gender gender;
+ //need to add gender
 
  public Integer getId() {
   return id;
@@ -117,5 +122,13 @@ public class UserEntity {
 
  public void setRole(String role) {
   this.role = role;
+ }
+
+ public Gender getGender() {
+  return gender;
+ }
+
+ public void setGender(Gender gender) {
+  this.gender = gender;
  }
 }

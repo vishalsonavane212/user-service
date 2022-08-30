@@ -14,5 +14,5 @@ public interface IUserRepository extends JpaRepository<UserEntity,Integer> {
 
     public  UserEntity save(UserEntity userEntity);
 
-    public  Optional<List<UserEntity>> findByemail(String email);
+    public  Optional<UserEntity> findByEmail(String email);
 }

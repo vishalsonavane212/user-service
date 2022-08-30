@@ -2,7 +2,8 @@ package com.maveric.userservice.controller;
 
 import com.maveric.userservice.dto.UserDTO;
 import com.maveric.userservice.entity.UserEntity;
-import com.maveric.userservice.service.IUserService;
+import com.maveric.userservice.service.UserService;
+import com.maveric.userservice.service.UserServiceImpl;
 import com.maveric.userservice.utils.UserServiceConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,24 +18,19 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/v1")
+@RequestMapping("api/v1/users")
 public class UserController {
 
 
     @Autowired
-    private IUserService iUserService;
+    private UserService iUserService;
 
-    @PostMapping("/users")
-    public ResponseEntity<String> createUser(@RequestBody @Valid UserDTO useDto){
-        iUserService.saveUserDetails(useDto);
-        if(useDto.getId() > 0){
-      return   ResponseEntity.status(HttpStatus.CREATED).body(UserServiceConstant.user_created_successfully);
-        }else {
-            return   ResponseEntity.status(HttpStatus.BAD_REQUEST).body(UserServiceConstant.user_not_created);
-        }
-
+    @PostMapping()
+    public ResponseEntity<String> createUser(@RequestBody @Valid UserDTO userDto){
+       ResponseEntity  response = iUserService.saveUserDetails(userDto);
+       return  new ResponseEntity(response.getBody(), HttpStatus.valueOf(response.getStatusCode().value()));
     }
-    @GetMapping("/users/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity  getUser(@PathVariable String userId){
         UserDTO userDTO = iUserService.getUserDetailsById(Integer.valueOf(userId));
         if(userDTO.getId() >0) {
@@ -44,7 +40,7 @@ public class UserController {
         }
     }
 
-    @PutMapping("/users/{userId}")
+    @PutMapping("/{userId}")
     public  ResponseEntity updateUser(@PathVariable String userId,@RequestBody @Valid UserDTO userDTO){
         userDTO.setId(Integer.valueOf(userId));
         UserDTO userDTOResponse =iUserService.updateUser(userDTO);
@@ -55,18 +51,17 @@ public class UserController {
         }
     }
 
-    @DeleteMapping("/users/{userId}")
+    @DeleteMapping("/{userId}")
     public  ResponseEntity deleteUser(@PathVariable String userId){
         UserDTO userDTOResponse = iUserService.deleteUser(Integer.valueOf(userId));
         return  new ResponseEntity<String>(UserServiceConstant.user_successfully_deleted,HttpStatus.OK);
     }
 
-    @GetMapping("/users/getUsersByEmail/{email}")
+    @GetMapping("/getUsersByEmail/{email}")
     public  ResponseEntity getUserByEmail(@PathVariable String email){
-       List<UserDTO> usersDTO = iUserService.getUserByEmail(email);
-       return  new ResponseEntity(usersDTO,HttpStatus.OK);
+        return iUserService.getUserByEmail(email);
     }
-    @GetMapping("/users")
+    @GetMapping()
     public  ResponseEntity getUsers(Pageable pageable){
      Page<UserEntity> response= iUserService.getUsers(pageable);
      return  new ResponseEntity(response,HttpStatus.OK);

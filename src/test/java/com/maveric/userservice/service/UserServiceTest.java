@@ -2,6 +2,7 @@ package com.maveric.userservice.service;
 
 import com.maveric.userservice.dto.UserDTO;
 import com.maveric.userservice.repository.IUserRepository;
+import com.maveric.userservice.utils.UserServiceConstant;
 import com.maveric.userservice.utils.Utills;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ public class UserServiceTest {
     private IUserRepository iUserRepository;
 
     @InjectMocks // auto inject helloRepository
-    private UserService iUserService = new UserService();
+    private UserService iUserService = new UserServiceImpl();
 
     public UserDTO prepaireUserDto(){
         UserDTO useDto=new UserDTO();
@@ -36,8 +37,8 @@ public class UserServiceTest {
     }
     @Test
     public  void  givenUserObject_whenSaveUserObject_ThenReturnUser(){
-        UserDTO dto = iUserService.saveUserDetails(prepaireUserDto());
+        String dto = iUserService.saveUserDetails(prepaireUserDto());
         Assertions.assertNotNull(dto);
-        Assertions.assertTrue(dto.getId() > 0);
+        Assertions.assertEquals(UserServiceConstant.user_created_successfully,dto);
     }
 }

@@ -21,18 +21,13 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @ExceptionHandler(Exception.class)
-    @ResponseBody
-    public ErrorDetails handleExceptions(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage(), "Exception");
-        return errorDetails;
-    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
+            //String fieldName = ((FieldError) error).getField();
+            String fieldName = "400";
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
@@ -52,4 +47,19 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return new ResponseEntity<Object>(
                 UserServiceConstant.access_denied_message_here, new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(EmailIdIsAlreadyPresentException.class)
+    @ResponseBody
+    public ErrorDetails emailIdIsAlreadyPresent(EmailIdIsAlreadyPresentException ex) {
+        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.BAD_REQUEST, ex.getMessage(), ex.getErrorMessage());
+        return errorDetails;
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseBody
+    public ErrorDetails handleExceptions(Exception ex, WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage(), "Exception");
+        return errorDetails;
+    }
+
 }

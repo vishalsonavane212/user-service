@@ -10,6 +10,10 @@ public class ErrorDetails {
     private String message;
     private List<String> errors;
 
+    public ErrorDetails() {
+
+    }
+
     public HttpStatus getStatus() {
         return status;
     }

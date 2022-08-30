@@ -1,5 +1,8 @@
 package com.maveric.userservice.dto;
 
+import com.maveric.userservice.utils.Gender;
+import com.maveric.userservice.utils.UserServiceConstant;
+import com.maveric.userservice.utils.Utills;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Component;
 
@@ -13,16 +16,12 @@ import java.util.Date;
 public class UserDTO implements Serializable {
     private  Integer id;
 
-    @NotEmpty(message = "first name must not be empty")
-    @Size(min = 3,message = "FirstName should be at least 3 chars")
+    @NotEmpty(message = UserServiceConstant.first_name_must_not_empty)//use constant for msg
     private String firstName;
 
-    @NotEmpty(message = "middle name must not be empty")
-    @Size(min = 4,message = "middleName should be at least 3 chars")
     private String middleName;
 
-    @NotEmpty(message = "last name must not be empty")
-    @Size(min = 4,message = "lastName should be at least 3 chars")
+    @NotEmpty(message = UserServiceConstant.last_name_must_not_empty)
     private  String lastName;
 
     @NotBlank
@@ -32,13 +31,16 @@ public class UserDTO implements Serializable {
     private  String phoneNumber;
     private  String address;
 
-    @PastOrPresent
+    //@PastOrPresent
     @DateTimeFormat(pattern="yyyy-MM-dd")
     private Date dateOfBirth;
     private  Date createdAt;
     private  Date updatedAt;
-    private  String password;
+
+    private  String password;//encryption  need to add
     private  String role;
+
+    private Gender gender;
 
     public Integer getId() {
         return id;
@@ -133,5 +135,13 @@ public class UserDTO implements Serializable {
 
     public void setRole(String role) {
         this.role = role;
+    }
+
+    public Gender getGender() {
+        return gender;
+    }
+
+    public void setGender(Gender gender) {
+        this.gender = gender;
     }
 }
