@@ -28,7 +28,9 @@ public class UserDTO implements Serializable {
     @Email
     private  String email;
 
+    @NotEmpty(message = UserServiceConstant.phone_number_required)
     private  String phoneNumber;
+    @NotEmpty(message = UserServiceConstant.address_is_required)
     private  String address;
 
     //@PastOrPresent

@@ -1,9 +1,16 @@
 package com.maveric.userservice.entity;
 
 import com.maveric.userservice.utils.Gender;
+import lombok.*;
 
 import javax.persistence.*;
 import java.sql.Date;
+
+/*@AllArgsConstructor
+@NoArgsConstructor
+@Builder
+@Getter
+@Setter*/
 
 @Entity
 @Table(name = "user_details")

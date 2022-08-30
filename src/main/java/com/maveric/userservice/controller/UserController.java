@@ -31,30 +31,22 @@ public class UserController {
        return  new ResponseEntity(response.getBody(), HttpStatus.valueOf(response.getStatusCode().value()));
     }
     @GetMapping("/{userId}")
-    public ResponseEntity  getUser(@PathVariable String userId){
-        UserDTO userDTO = iUserService.getUserDetailsById(Integer.valueOf(userId));
-        if(userDTO.getId() >0) {
-            return new ResponseEntity<UserDTO>(userDTO, HttpStatus.OK);
-        }else {
-            return new ResponseEntity( HttpStatus.BAD_REQUEST);
-        }
+    public ResponseEntity  getUser(@PathVariable(required = true) String userId){
+        ResponseEntity response = iUserService.getUserDetailsById(Integer.valueOf(userId));
+        return  new ResponseEntity(response.getBody(),response.getStatusCode());
     }
 
     @PutMapping("/{userId}")
-    public  ResponseEntity updateUser(@PathVariable String userId,@RequestBody @Valid UserDTO userDTO){
+    public  ResponseEntity updateUser(@PathVariable(required = true) String userId,@RequestBody @Valid UserDTO userDTO){
         userDTO.setId(Integer.valueOf(userId));
-        UserDTO userDTOResponse =iUserService.updateUser(userDTO);
-        if(userDTOResponse.getId() >0) {
-            return new ResponseEntity<UserDTO>(userDTOResponse, HttpStatus.OK);
-        }else {
-            return new ResponseEntity(HttpStatus.BAD_REQUEST);
-        }
+        ResponseEntity userDTOResponse =iUserService.updateUser(userDTO);
+        return  new ResponseEntity(userDTOResponse.getBody(),userDTOResponse.getStatusCode());
     }
 
     @DeleteMapping("/{userId}")
     public  ResponseEntity deleteUser(@PathVariable String userId){
-        UserDTO userDTOResponse = iUserService.deleteUser(Integer.valueOf(userId));
-        return  new ResponseEntity<String>(UserServiceConstant.user_successfully_deleted,HttpStatus.OK);
+        ResponseEntity userDTOResponse = iUserService.deleteUser(Integer.valueOf(userId));
+        return  new ResponseEntity(userDTOResponse.getBody(),userDTOResponse.getStatusCode());
     }
 
     @GetMapping("/getUsersByEmail/{email}")
@@ -63,7 +55,7 @@ public class UserController {
     }
     @GetMapping()
     public  ResponseEntity getUsers(Pageable pageable){
-     Page<UserEntity> response= iUserService.getUsers(pageable);
-     return  new ResponseEntity(response,HttpStatus.OK);
+     ResponseEntity response= iUserService.getUsers(pageable);
+     return  new ResponseEntity(response.getBody(),response.getStatusCode());
     }
 }

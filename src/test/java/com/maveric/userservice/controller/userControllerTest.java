@@ -4,8 +4,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.maveric.userservice.dto.UserDTO;
-import com.maveric.userservice.repository.IUserRepository;
+import com.maveric.userservice.repository.UserRepository;
 import com.maveric.userservice.service.UserService;
+import com.maveric.userservice.service.UserServiceImpl;
 import com.maveric.userservice.utils.Utills;
 import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.Assertions;
@@ -19,7 +20,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -38,10 +38,10 @@ public class userControllerTest {
     private MockMvc mockMvc;
 
     @InjectMocks // auto inject helloRepository
-    private UserService iUserService = new UserService();
+    private UserService iUserService = new UserServiceImpl();
 
     @Mock
-    private IUserRepository iUserRepository;
+    private UserRepository iUserRepository;
     @Autowired
     WebApplicationContext webApplicationContext;
 
@@ -79,7 +79,6 @@ public class userControllerTest {
         try {
             MvcResult result = mockMvc.perform(MockMvcRequestBuilders.post(uri)
                     .contentType(MediaType.APPLICATION_JSON).content(inputJson)).andReturn();
-
             int status=result.getResponse().getStatus();
             Assertions.assertEquals(201, status);
             String content = result.getResponse().getContentAsString();

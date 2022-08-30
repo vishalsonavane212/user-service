@@ -3,27 +3,22 @@ package com.maveric.userservice.service;
 
 import com.maveric.userservice.dto.UserDTO;
 import com.maveric.userservice.entity.UserEntity;
-import com.maveric.userservice.exception.EmailIdIsAlreadyPresentException;
 import com.maveric.userservice.exception.ErrorDetails;
-import com.maveric.userservice.repository.IUserRepository;
+import com.maveric.userservice.repository.UserRepository;
 import com.maveric.userservice.utils.UserServiceConstant;
 import com.maveric.userservice.utils.Utills;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.sql.Date;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -31,7 +26,7 @@ import java.util.stream.Collectors;
 public class UserServiceImpl implements UserService{
 
     @Autowired
-    private IUserRepository iUserRepository;
+    private UserRepository iUserRepository;
 
     @Override
     @Transactional
@@ -53,10 +48,10 @@ public class UserServiceImpl implements UserService{
                  return response = new ResponseEntity(UserServiceConstant.user_not_created,HttpStatus.BAD_REQUEST);
                }
            }else {
-               ErrorDetails errorDetails=new ErrorDetails();
-               errorDetails.setMessage(UserServiceConstant.email_is_already_present);
-               errorDetails.setStatus(HttpStatus.BAD_REQUEST);
-               return new ResponseEntity(errorDetails,HttpStatus.BAD_REQUEST);
+               Map<String ,String> error=new HashMap<String ,String>();
+               error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
+               error.put(UserServiceConstant.error_message,UserServiceConstant.email_is_already_present);
+               return new ResponseEntity(error,HttpStatus.BAD_REQUEST);
            }
         }catch (Exception e){
         throw new RuntimeException(e);
@@ -64,52 +59,77 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public UserDTO getUserDetailsById(Integer userId) {
+    public ResponseEntity getUserDetailsById(Integer userId) {
+        ResponseEntity response= new ResponseEntity(HttpStatus.OK);
         UserDTO userDTO = new UserDTO();
         try {
             Optional<UserEntity> userEntity = iUserRepository.findById(userId);
             if (userEntity.isPresent()) {
                 BeanUtils.copyProperties(userEntity.get(), userDTO);
+                response= new ResponseEntity(userDTO,HttpStatus.OK);
+            }else {
+                Map<String,String> error=new HashMap<String,String>();
+                error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
+                error.put(UserServiceConstant.error_message,UserServiceConstant.user_is_not_present_given_id);
+                response = new ResponseEntity(error,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-
+         throw  new RuntimeException(e);
         }
-        return userDTO;
+        return response;
     }
 
     @Override
-    public UserDTO updateUser(UserDTO userDTO) {
+    public ResponseEntity updateUser(UserDTO userDTO) {
+        ResponseEntity response=new ResponseEntity(HttpStatus.OK);
         try {
             UserEntity resultById = null;
             Optional<UserEntity> userEntity = iUserRepository.findById(userDTO.getId());
             if (userEntity.isPresent()) {
-                resultById = userEntity.get();
-                // userDTO.setCreatedAt(Utills.convertSqlToUtilDate(resultById.getCreatedAt()));
-                resultById = mapUserDtoToUserEntity(userDTO, resultById);
-                resultById.setId(userDTO.getId());
-                UserEntity result = iUserRepository.save(resultById);
+                Optional<UserEntity> emailIsPresent=iUserRepository.findByEmail(userDTO.getEmail());
+                if(emailIsPresent.isPresent()){
+                    Map<String,String> error=new HashMap<String,String>();
+                    error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
+                    error.put(UserServiceConstant.error_message,UserServiceConstant.email_is_already_present);
+                  return   response =new ResponseEntity(error,HttpStatus.BAD_REQUEST);
+                }
+                    resultById = userEntity.get();
+                    resultById = mapUserDtoToUserEntity(userDTO, resultById);
+                    resultById.setId(userDTO.getId());
+                    UserEntity result = iUserRepository.save(resultById);
 
-                return mapUserEntityToUserDTO(result);
+                    response = new ResponseEntity(mapUserEntityToUserDTO(result), HttpStatus.OK);
+
+            }else {
+                Map<String,String> error=new HashMap<String,String>();
+                error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
+                error.put(UserServiceConstant.error_message,UserServiceConstant.user_is_not_present_given_id);
+                response =new ResponseEntity(error,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-         throw new RuntimeException();
+         throw new RuntimeException(e);
         }
-        return  null;
+        return response;
     }
 
     @Override
-    public UserDTO deleteUser(Integer userId) {
+    public ResponseEntity deleteUser(Integer userId) {
+        ResponseEntity response=new ResponseEntity(HttpStatus.OK);
         try {
             Optional<UserEntity> userEntity = iUserRepository.findById(userId);
             if (userEntity.isPresent()) {
                 iUserRepository.deleteById(userId);
-                userEntity.get();
-                return mapUserEntityToUserDTO(userEntity.get());
+                response =new ResponseEntity(UserServiceConstant.user_successfully_deleted,HttpStatus.OK);
+            }else {
+                Map<String,String> error=new HashMap<String,String>();
+                error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
+                error.put(UserServiceConstant.error_message,UserServiceConstant.user_is_not_present_given_id);
+                response =new ResponseEntity(error,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-     throw  new RuntimeException();
+     throw  new RuntimeException(e);
         }
-        return null;
+        return response;
     }
 
     @Override
@@ -121,7 +141,10 @@ public class UserServiceImpl implements UserService{
                 UserDTO user = mapUserEntityToUserDTO(userEntity.get());
                   response = new ResponseEntity(user,HttpStatus.OK);
             }else {
-                  response = new ResponseEntity(UserServiceConstant.email_not_present,HttpStatus.BAD_REQUEST);
+                Map<String,String> result=new HashMap<String,String>();
+                result.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
+                result.put(UserServiceConstant.error_message,UserServiceConstant.email_not_present);
+                  response = new ResponseEntity(result,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
          throw  new RuntimeException();
@@ -130,15 +153,18 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public Page<UserEntity> getUsers(Pageable pageable) {
+    public ResponseEntity getUsers(Pageable pageable) {
+        ResponseEntity response=new ResponseEntity(HttpStatus.OK);
         Page<UserEntity> results= null;
         try {
              results =  iUserRepository.findAll(pageable);
+          List<UserDTO> userDtos =  results.stream().map(entity ->mapUserEntityToUserDTO(entity)).collect(Collectors.toList());
+           response =new ResponseEntity(userDtos,HttpStatus.OK);
         }catch (Exception e){
-        throw  new RuntimeException();
+        throw  new RuntimeException(e);
         }
 
-        return results;
+        return response;
     }
 
     private UserEntity mapUserDtoToUserEntity(UserDTO userDTO,UserEntity userEntity){

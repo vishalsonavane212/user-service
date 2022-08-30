@@ -14,13 +14,13 @@ public interface UserService {
 
     public ResponseEntity saveUserDetails(UserDTO user);
 
-    public UserDTO getUserDetailsById(Integer userId);
+    public ResponseEntity getUserDetailsById(Integer userId);
 
-    public UserDTO updateUser(UserDTO userDTO);
+    public ResponseEntity updateUser(UserDTO userDTO);
 
-    public UserDTO deleteUser(Integer userId);
+    public ResponseEntity deleteUser(Integer userId);
 
     public ResponseEntity getUserByEmail(String email);
 
-    public Page<UserEntity> getUsers(Pageable pageable);
+    public ResponseEntity getUsers(Pageable pageable);
 }
