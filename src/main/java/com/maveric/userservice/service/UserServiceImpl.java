@@ -3,7 +3,9 @@ package com.maveric.userservice.service;
 
 import com.maveric.userservice.dto.UserDTO;
 import com.maveric.userservice.entity.UserEntity;
-import com.maveric.userservice.exception.ErrorDetails;
+import com.maveric.userservice.exception.CreateUserException;
+import com.maveric.userservice.exception.GetUserByIdException;
+import com.maveric.userservice.exception.UserException;
 import com.maveric.userservice.repository.UserRepository;
 import com.maveric.userservice.utils.UserServiceConstant;
 import com.maveric.userservice.utils.Utills;
@@ -31,7 +33,6 @@ public class UserServiceImpl implements UserService{
     @Override
     @Transactional
     public ResponseEntity saveUserDetails(UserDTO user)  {
-        ResponseEntity response = new ResponseEntity( UserServiceConstant.email_is_already_present,HttpStatus.BAD_REQUEST);
         try {
            Optional<UserEntity> entity = iUserRepository.findByEmail(user.getEmail());
            if(!entity.isPresent()) {
@@ -43,128 +44,117 @@ public class UserServiceImpl implements UserService{
                iUserRepository.save(userEntity);
                user.setId(userEntity.getId());
                if (userEntity.getId() != null) {
-                   return  response =new ResponseEntity(UserServiceConstant.user_created_successfully,HttpStatus.CREATED);
+                   return  new ResponseEntity(UserServiceConstant.USER_CREATED_SUCCESSFULLY,HttpStatus.CREATED);
                } else {
-                 return response = new ResponseEntity(UserServiceConstant.user_not_created,HttpStatus.BAD_REQUEST);
+                 return  new ResponseEntity(UserServiceConstant.USER_NOT_CREATED,HttpStatus.BAD_REQUEST);
                }
            }else {
-               Map<String ,String> error=new HashMap<String ,String>();
+               Map<String ,String> error=new HashMap<>();
                error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
-               error.put(UserServiceConstant.error_message,UserServiceConstant.email_is_already_present);
+               error.put(UserServiceConstant.error_message,UserServiceConstant.EMAIL_IS_ALREADY_PRESENT);
                return new ResponseEntity(error,HttpStatus.BAD_REQUEST);
            }
         }catch (Exception e){
-        throw new RuntimeException(e);
+        throw new CreateUserException(e,UserServiceConstant.USER_NOT_CREATED);
         }
     }
 
     @Override
     public ResponseEntity getUserDetailsById(Integer userId) {
-        ResponseEntity response= new ResponseEntity(HttpStatus.OK);
         UserDTO userDTO = new UserDTO();
         try {
             Optional<UserEntity> userEntity = iUserRepository.findById(userId);
             if (userEntity.isPresent()) {
                 BeanUtils.copyProperties(userEntity.get(), userDTO);
-                response= new ResponseEntity(userDTO,HttpStatus.OK);
+                return new ResponseEntity(userDTO,HttpStatus.OK);
             }else {
-                Map<String,String> error=new HashMap<String,String>();
+                Map<String,String> error=new HashMap<>();
                 error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
-                error.put(UserServiceConstant.error_message,UserServiceConstant.user_is_not_present_given_id);
-                response = new ResponseEntity(error,HttpStatus.BAD_REQUEST);
+                error.put(UserServiceConstant.error_message,UserServiceConstant.USER_IS_NOT_PRESENT_FOR_GIVEN_ID);
+                return new ResponseEntity(error,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-         throw  new RuntimeException(e);
+         throw  new GetUserByIdException(e,e.getMessage());
         }
-        return response;
     }
 
     @Override
     public ResponseEntity updateUser(UserDTO userDTO) {
-        ResponseEntity response=new ResponseEntity(HttpStatus.OK);
         try {
             UserEntity resultById = null;
             Optional<UserEntity> userEntity = iUserRepository.findById(userDTO.getId());
             if (userEntity.isPresent()) {
                 Optional<UserEntity> emailIsPresent=iUserRepository.findByEmail(userDTO.getEmail());
                 if(emailIsPresent.isPresent()){
-                    Map<String,String> error=new HashMap<String,String>();
+                    Map<String,String> error=new HashMap<>();
                     error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
-                    error.put(UserServiceConstant.error_message,UserServiceConstant.email_is_already_present);
-                  return   response =new ResponseEntity(error,HttpStatus.BAD_REQUEST);
+                    error.put(UserServiceConstant.error_message,UserServiceConstant.EMAIL_IS_ALREADY_PRESENT);
+                  return   new ResponseEntity(error,HttpStatus.BAD_REQUEST);
                 }
                     resultById = userEntity.get();
                     resultById = mapUserDtoToUserEntity(userDTO, resultById);
                     resultById.setId(userDTO.getId());
                     UserEntity result = iUserRepository.save(resultById);
 
-                    response = new ResponseEntity(mapUserEntityToUserDTO(result), HttpStatus.OK);
+                    return new ResponseEntity(mapUserEntityToUserDTO(result), HttpStatus.OK);
 
             }else {
-                Map<String,String> error=new HashMap<String,String>();
+                Map<String,String> error=new HashMap<>();
                 error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
-                error.put(UserServiceConstant.error_message,UserServiceConstant.user_is_not_present_given_id);
-                response =new ResponseEntity(error,HttpStatus.BAD_REQUEST);
+                error.put(UserServiceConstant.error_message,UserServiceConstant.USER_IS_NOT_PRESENT_FOR_GIVEN_ID);
+                return new ResponseEntity(error,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-         throw new RuntimeException(e);
+         throw new UserException(e,UserServiceConstant.USER_NOT_UPDATED);
         }
-        return response;
     }
 
     @Override
     public ResponseEntity deleteUser(Integer userId) {
-        ResponseEntity response=new ResponseEntity(HttpStatus.OK);
         try {
             Optional<UserEntity> userEntity = iUserRepository.findById(userId);
             if (userEntity.isPresent()) {
                 iUserRepository.deleteById(userId);
-                response =new ResponseEntity(UserServiceConstant.user_successfully_deleted,HttpStatus.OK);
+               return new ResponseEntity(UserServiceConstant.USER_DELETED_SUCCESSFULLY,HttpStatus.OK);
             }else {
-                Map<String,String> error=new HashMap<String,String>();
+                Map<String,String> error=new HashMap<>();
                 error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
-                error.put(UserServiceConstant.error_message,UserServiceConstant.user_is_not_present_given_id);
-                response =new ResponseEntity(error,HttpStatus.BAD_REQUEST);
+                error.put(UserServiceConstant.error_message,UserServiceConstant.USER_IS_NOT_PRESENT_FOR_GIVEN_ID);
+                return new  ResponseEntity(error,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-     throw  new RuntimeException(e);
+     throw  new UserException(e,UserServiceConstant.USER_NOT_DELETED);
         }
-        return response;
     }
 
     @Override
     public ResponseEntity getUserByEmail(String email) {
-        ResponseEntity response = new ResponseEntity(HttpStatus.BAD_REQUEST);
         try {
             Optional<UserEntity> userEntity = iUserRepository.findByEmail(email);
             if (userEntity.isPresent()) {
                 UserDTO user = mapUserEntityToUserDTO(userEntity.get());
-                  response = new ResponseEntity(user,HttpStatus.OK);
+                  return new ResponseEntity(user,HttpStatus.OK);
             }else {
-                Map<String,String> result=new HashMap<String,String>();
+                Map<String,String> result=new HashMap<>();
                 result.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
-                result.put(UserServiceConstant.error_message,UserServiceConstant.email_not_present);
-                  response = new ResponseEntity(result,HttpStatus.BAD_REQUEST);
+                result.put(UserServiceConstant.error_message,UserServiceConstant.EMAIL_NOT_PRESENT);
+                  return new ResponseEntity(result,HttpStatus.BAD_REQUEST);
             }
         }catch (Exception e){
-         throw  new RuntimeException();
+         throw  new UserException(e,e.getMessage());
         }
-        return  response;
     }
 
     @Override
     public ResponseEntity getUsers(Pageable pageable) {
-        ResponseEntity response=new ResponseEntity(HttpStatus.OK);
         Page<UserEntity> results= null;
         try {
              results =  iUserRepository.findAll(pageable);
-          List<UserDTO> userDtos =  results.stream().map(entity ->mapUserEntityToUserDTO(entity)).collect(Collectors.toList());
-           response =new ResponseEntity(userDtos,HttpStatus.OK);
+          List<UserDTO> userDtos =  results.stream().map(entity -> this.mapUserEntityToUserDTO(entity)).collect(Collectors.toList());
+            return new ResponseEntity(userDtos,HttpStatus.OK);
         }catch (Exception e){
-        throw  new RuntimeException(e);
+        throw  new UserException(e,e.getMessage());
         }
-
-        return response;
     }
 
     private UserEntity mapUserDtoToUserEntity(UserDTO userDTO,UserEntity userEntity){

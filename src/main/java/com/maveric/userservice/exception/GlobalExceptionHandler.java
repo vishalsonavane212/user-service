@@ -4,7 +4,6 @@ import com.maveric.userservice.utils.UserServiceConstant;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
 
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -24,43 +23,42 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatus status, WebRequest request) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            //String fieldName = ((FieldError) error).getField();
+        Map<String, String> errors = new HashMap();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
             String errorMessage = error.getDefaultMessage();
-
             errors.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
             errors.put(UserServiceConstant.error_message, errorMessage);
         });
-        return new ResponseEntity<>(errors,status );
+        return new ResponseEntity(errors,status );
+    }
+
+    @ExceptionHandler(CreateUserException.class)
+    @ResponseBody
+    public  Map<String,String> createUserException(CreateUserException ex, WebRequest request){
+        Map<String ,String > error=new HashMap();
+        error.put(UserServiceConstant.error_code,UserServiceConstant.BAD_REQUEST);
+        error.put(UserServiceConstant.error_message,UserServiceConstant.USER_NOT_CREATED);
+        return error;
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseBody
     public ErrorDetails handleConstraintViolation(ConstraintViolationException ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.BAD_REQUEST,ex.getMessage(), ex.getConstraintViolations().toString());
-        return errorDetails;
+        return new ErrorDetails(HttpStatus.BAD_REQUEST,ex.getMessage(), ex.getConstraintViolations().toString());
     }
 
     @ExceptionHandler({ AccessDeniedException.class })
     public ResponseEntity<Object> handleAccessDeniedException(
             Exception ex, WebRequest request) {
         return new ResponseEntity<Object>(
-                UserServiceConstant.access_denied_message_here, new HttpHeaders(), HttpStatus.FORBIDDEN);
+                UserServiceConstant.ACCESS_DENIED, new HttpHeaders(), HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(EmailIdIsAlreadyPresentException.class)
-    @ResponseBody
-    public ErrorDetails emailIdIsAlreadyPresent(EmailIdIsAlreadyPresentException ex) {
-        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.BAD_REQUEST, ex.getMessage(), ex.getErrorMessage());
-        return errorDetails;
-    }
 
     @ExceptionHandler(Exception.class)
     @ResponseBody
     public ErrorDetails handleExceptions(Exception ex, WebRequest request) {
-        ErrorDetails errorDetails = new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage(), "Exception");
-        return errorDetails;
+        return new ErrorDetails(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage(), "Exception");
     }
 
 }

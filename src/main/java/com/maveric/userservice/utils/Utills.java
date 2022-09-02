@@ -42,9 +42,8 @@ public interface Utills {
             }
             return sb.toString();
         } catch (NoSuchAlgorithmException ex) {
-           // Logger.getLogger(CryptWithMD5.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
+        return "";
 
 
     }
