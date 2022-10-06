@@ -13,9 +13,9 @@ import java.time.ZoneId;
 public interface Utills {
 
     public static Date convertDateUtilToSql(java.util.Date date){
-        LocalDateTime conv= LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
-        LocalDate convDate=conv.toLocalDate();
-        return java.sql.Date.valueOf(convDate);
+        LocalDateTime convert= LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+        LocalDate convertDate=convert.toLocalDate();
+        return java.sql.Date.valueOf(convertDate);
     }
 
     public  static  Date getCurrentDate(){
@@ -30,21 +30,19 @@ public interface Utills {
 
 
     public static String cryptWithMD5(String pass){
-        MessageDigest md = null;
+        MessageDigest messageDigest = null;
         try {
-            md = MessageDigest.getInstance("MD5");
+            messageDigest = MessageDigest.getInstance("MD5");
             byte[] passBytes = pass.getBytes();
-            md.reset();
-            byte[] digested = md.digest(passBytes);
-            StringBuffer sb = new StringBuffer();
+            messageDigest.reset();
+            byte[] digested = messageDigest.digest(passBytes);
+            StringBuffer stringBuffer = new StringBuffer();
             for(int i=0;i<digested.length;i++){
-                sb.append(Integer.toHexString(0xff & digested[i]));
+                stringBuffer.append(Integer.toHexString(0xff & digested[i]));
             }
-            return sb.toString();
+            return stringBuffer.toString();
         } catch (NoSuchAlgorithmException ex) {
         }
         return "";
-
-
     }
 }

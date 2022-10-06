@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+
+  user-service:
+      build: .
+      image: user-service:1.0.0
+      ports:
+        - 3005:3005
+      environment:
+        SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/maveric_bank_app?autoReconnect=true&maxReconnects=1500&useSSL=false

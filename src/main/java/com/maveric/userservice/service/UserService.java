@@ -20,4 +20,6 @@ public interface UserService {
     public ResponseEntity getUserByEmail(String email);
 
     public ResponseEntity getUsers(Pageable pageable);
+
+    public ResponseEntity getUserByEmailAndPassword(String email,String password);
 }

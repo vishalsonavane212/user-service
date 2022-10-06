@@ -10,7 +10,6 @@ import java.sql.Date;
 @NoArgsConstructor
 @Getter
 @Setter
-
 @Entity
 @Table(name = "user_details")
 public class UserEntity {
@@ -18,7 +17,6 @@ public class UserEntity {
  @Column(name = "user_id")
  @GeneratedValue(strategy = GenerationType.AUTO)
  private Integer id;
-
  private String firstName;
  private String middleName;
  @NonNull
@@ -31,7 +29,5 @@ public class UserEntity {
  private Date updatedAt;
  private String password;
  private String role;
-
  private Gender gender;
-
 }

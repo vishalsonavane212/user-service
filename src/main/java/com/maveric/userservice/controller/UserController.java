@@ -2,6 +2,8 @@ package com.maveric.userservice.controller;
 
 import com.maveric.userservice.dto.UserDTO;
 import com.maveric.userservice.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -10,12 +12,14 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 
 @RestController
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("api/v1/users")
 public class UserController {
 
-
+    Logger logger = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserService iUserService;
+
 
     @PostMapping()
     public ResponseEntity<String> createUser(@RequestBody @Valid UserDTO userDto){
@@ -49,5 +53,10 @@ public class UserController {
     public  ResponseEntity getUsers(Pageable pageable){
      ResponseEntity response= iUserService.getUsers(pageable);
      return  new ResponseEntity(response.getBody(),response.getStatusCode());
+    }
+
+    @GetMapping(path = "/authenticate/{email}/{password}",produces = "application/json")
+    public ResponseEntity getAuthenticate(@PathVariable(required = true) String email,@PathVariable(required = true) String password){
+         return   iUserService.getUserByEmailAndPassword(email,password);
     }
 }

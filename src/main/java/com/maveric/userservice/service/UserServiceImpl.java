@@ -31,7 +31,6 @@ public class UserServiceImpl implements UserService{
     private UserRepository iUserRepository;
 
     @Override
-    @Transactional
     public ResponseEntity saveUserDetails(UserDTO user)  {
         try {
            Optional<UserEntity> entity = iUserRepository.findByEmail(user.getEmail());
@@ -133,6 +132,7 @@ public class UserServiceImpl implements UserService{
             Optional<UserEntity> userEntity = iUserRepository.findByEmail(email);
             if (userEntity.isPresent()) {
                 UserDTO user = mapUserEntityToUserDTO(userEntity.get());
+                //user.setPassword(userEntity.get().getPassword());
                   return new ResponseEntity(user,HttpStatus.OK);
             }else {
                 Map<String,String> result=new HashMap<>();
@@ -155,6 +155,21 @@ public class UserServiceImpl implements UserService{
         }catch (Exception e){
         throw  new UserException(e,e.getMessage());
         }
+    }
+
+    @Override
+    public ResponseEntity getUserByEmailAndPassword(String email, String password) {
+        try {
+            Optional<UserEntity> userEntity = iUserRepository.findByEmailAndPassword(email,password);
+            if (userEntity.isPresent()) {
+                UserDTO user = mapUserEntityToUserDTO(userEntity.get());
+                user.setPassword(userEntity.get().getPassword());
+                return new ResponseEntity(user,HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            throw new UserException(e,e.getMessage());
+        }
+        return null;
     }
 
     private UserEntity mapUserDtoToUserEntity(UserDTO userDTO,UserEntity userEntity){
